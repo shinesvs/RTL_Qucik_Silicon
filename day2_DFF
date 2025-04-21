@@ -1,0 +1,77 @@
+// Different DFF
+
+module day2 (
+  input     logic      clk,
+  input     logic      reset,
+
+  input     logic      d_i,
+
+  output    logic      q_norst_o,
+  output    logic      q_syncrst_o,
+  output    logic      q_asyncrst_o
+);
+
+  // No reset
+  always_ff @(posedge clk)
+    q_norst_o <= d_i;
+
+  // Sync reset
+  always_ff @(posedge clk)
+    if (reset)
+      q_syncrst_o <= 1'b0;
+    else
+      q_syncrst_o <= d_i;
+
+  // Async reset
+  always_ff @(posedge clk or posedge reset)
+    if (reset)
+      q_asyncrst_o <= 1'b0;
+    else
+      q_asyncrst_o <= d_i;
+
+endmodule
+
+// DFF TB
+
+module day2_tb ();
+
+  logic      clk;
+  logic      reset;
+
+  logic      d_i;
+
+  logic      q_norst_o;
+  logic      q_syncrst_o;
+  logic      q_asyncrst_o;
+
+  day2 DAY2 (.*);
+
+  // Generate clk
+  always begin
+    clk = 1'b1;
+    #5;
+    clk = 1'b0;
+    #5;
+  end
+
+  // Stimulus
+  initial begin
+    reset <= 1'b1;
+    d_i <= 1'b0;
+    @(posedge clk);
+    reset <= 1'b0;
+    @(posedge clk);
+    d_i <= 1'b1;
+    @(posedge clk);
+    @(posedge clk);
+    @(negedge clk);
+    reset <= 1'b1;
+    @(posedge clk);
+    @(posedge clk);
+    reset <= 1'b0;
+    @(posedge clk);
+    @(posedge clk);
+    $finish();
+  end
+
+endmodule
